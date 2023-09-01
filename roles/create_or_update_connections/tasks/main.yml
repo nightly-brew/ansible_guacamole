@@ -83,7 +83,7 @@
 
 - name: "add generated ids to connections"
   ansible.builtin.set_fact:
-    enriched_post_connections_list: "{{ connections | community.general.lists_mergeby(connection_ids, 'name') }}"
+    enriched_post_connections_list: "{{ guacamole_connections | community.general.lists_mergeby(connection_ids, 'name') }}"
 
 - name: "assign connections to their users"
   ansible.builtin.uri:
