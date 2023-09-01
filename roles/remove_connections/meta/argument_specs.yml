@@ -1,0 +1,17 @@
+argument_specs:
+  main:
+    short_description: "remove guacamole connections"
+    options:
+      guacamole_url:
+        description: "The url of the guacamole instance"
+        type: "str"
+        required: true
+      guacamole_authdata:
+        description: "Authentication data for guacamole"
+        type: "str"
+        required: true
+      guacamole_connections:
+        description: "The names of the connections to remove"
+        type:        "list"
+        elements:    "str"
+        required:    true

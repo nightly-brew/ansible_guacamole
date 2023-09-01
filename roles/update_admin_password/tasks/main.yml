@@ -1,0 +1,10 @@
+- name: "update admin password"
+  ansible.builtin.uri:
+    url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users/{{ guacamole_admin_username }}/password?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "PUT"
+    validate_certs: false
+    body_format: "json"
+    body:
+      oldPassword: "{{ guacamole_old_password }}"
+      newPassword: "{{ guacamole_new_password }}"
+    status_code: 204

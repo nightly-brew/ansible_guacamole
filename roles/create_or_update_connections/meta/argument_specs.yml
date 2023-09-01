@@ -1,0 +1,56 @@
+argument_specs:
+  main:
+    short_description: "create or update guacamole connections"
+    options:
+      guacamole_url:
+        description: "The url of the guacamole service"
+        type: "str"
+        required: true
+      guacamole_authdata:
+        description: "Authentication data for guacamole"
+        type: "str"
+        required: true
+      guacamole_connections:
+        description: "The list of connections to create"
+        type: "list"
+        elements: "dict"
+        required: true
+        options:
+          name:
+            description: "The name of the connection"
+            type: "str"
+            required: true
+          owner:
+            description: "The user owning the connection"
+            type: "str"
+            required: true
+          address:
+            description: "The address of the remote machine"
+            type: "str"
+            required: true
+          port:
+            description: "The port on the remote machine on which the connection service is listening. Defaults to protocol default"
+            type: "int"
+            required: false
+          protocol:
+            description: "The protocol used by the connection"
+            type: "str"
+            choices:
+            - "rdp"
+            required: true
+          ad_domain:
+            description: "The domain, if the remote machine authenticates through an active directory"
+            type: "str"
+            required: false
+          server_layout:
+            description: "The keyboard layout of the remote machine; only needed when the protocol used is rdp"
+            type: "str"
+            required: false
+          username:
+            description: "The remote username"
+            type: "str"
+            required: true
+          password:
+            description: "The remote user password. Can be left empty if the remote machine has no password auth enabled"
+            type: "str"
+            required: false

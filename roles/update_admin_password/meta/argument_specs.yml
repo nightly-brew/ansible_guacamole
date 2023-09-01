@@ -1,0 +1,20 @@
+argument_specs:
+  main:
+    short_description: "update guacamole administrator password"
+    options:
+      guacamole_url:
+        description: "The url of the guacamole instance"
+        type: "str"
+        required: true
+      guacamole_authdata:
+        description: "Authentication data for guacamole"
+        type: "str"
+        required: true
+      guacamole_old_password:
+        description: "The old password of the guacamole administrator account"
+        type: "str"
+        required: true
+      guacamole_new_password:
+        description: "The new password for the guacamole administrator account"
+        type: "str"
+        required: true

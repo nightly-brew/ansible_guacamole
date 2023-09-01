@@ -1,0 +1,103 @@
+- name: "list existing connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "GET"
+    validate_certs: false
+  register: "pre_connections_list"
+
+- name: "replace identifier in keys with connection names"
+  ansible.builtin.set_fact:
+    flipped_pre_connections_list: "{{ flipped_pre_connections_list | default({}) | combine({conn['value']['name']: conn['value']}) }}"
+  loop: "{{ pre_connections_list['json'] | dict2items }}"
+  loop_control:
+    loop_var:  "conn"
+    label:     "{{ conn['value']['name'] }}"
+
+- name: "update existing RDP connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections/{{ flipped_pre_connections_list[conn['name']]['identifier'] }}?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "PUT"
+    validate_certs: false
+    body_format: "json"
+    body:
+      parentIdentifier: "ROOT"
+      name: "{{ conn['name'] }}"
+      protocol: "rdp"
+      parameters:
+        hostname:      "{{ conn['address'] }}"
+        port:          "{{ conn['port'] | default('') }}"
+        security:      "any"
+        ignore-cert:   "true"
+        domain:        "{{ conn['ad_domain'] | default('') }}"
+        username:      "{{ conn['username'] }}"
+        password:      "{{ conn['password'] | default('') }}"
+        server-layout: "{{ conn['server_layout'] | default('') }}"
+      attributes: {}
+    status_code: 204
+  loop: "{{ guacamole_connections }}"
+  loop_control:
+    loop_var: "conn"
+    label:    "{{ conn['name'] }}"
+  when: conn['protocol'] == "rdp" and conn['name'] in (flipped_pre_connections_list | default({}))
+
+- name: "create missing RDP connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "POST"
+    validate_certs: false
+    body_format: "json"
+    body:
+      parentIdentifier: "ROOT"
+      name: "{{ conn['name'] }}"
+      protocol: "rdp"
+      parameters:
+        hostname:      "{{ conn['address'] }}"
+        port:          "{{ conn['port'] | default('') }}"
+        security:      "any"
+        ignore-cert:   "true"
+        domain:        "{{ conn['ad_domain'] | default('') }}"
+        username:      "{{ conn['username'] }}"
+        password:      "{{ conn['password'] | default('') }}"
+        server-layout: "{{ conn['server_layout'] | default('') }}"
+      attributes: {}
+  loop: "{{ guacamole_connections }}"
+  loop_control:
+    loop_var: "conn"
+    label:    "{{ conn['name'] }}"
+  when: conn['protocol'] == "rdp" and conn['name'] not in (flipped_pre_connections_list | default({}))
+
+- name: "list connections after creation"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "GET"
+    validate_certs: false
+  register: "post_connections_list"
+
+- name: "extract connection ids"
+  ansible.builtin.set_fact:
+    connection_ids: "{{ connection_ids | default([]) + [{ 'name': conn['name'], 'id': conn['identifier']}] }}"
+  loop: "{{ post_connections_list['json'] | dict2items | map(attribute='value') | list }}"
+  loop_control:
+    loop_var:  "conn"
+    label:     "{{ conn['name'] }}"
+
+- name: "add generated ids to connections"
+  ansible.builtin.set_fact:
+    enriched_post_connections_list: "{{ connections | community.general.lists_mergeby(connection_ids, 'name') }}"
+
+- name: "assign connections to their users"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users/{{ conn['owner'] }}/permissions?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "PATCH"
+    validate_certs: false
+    body_format: "json"
+    body:
+    - op: "add"
+      path: "/connectionPermissions/{{ conn['id'] }}"
+      value: "READ"
+    status_code: 204
+  loop: "{{ enriched_post_connections_list }}"
+  loop_control:
+    loop_var: "conn"
+    label:    "{{ conn['name'] }}"
+  when: "conn['owner'] is defined"

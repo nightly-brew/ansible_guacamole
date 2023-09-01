@@ -1,0 +1,25 @@
+- name: "list existing connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "GET"
+    validate_certs: false
+  register: "connections_list"
+
+- name: "replace identifier in keys with connection names"
+  ansible.builtin.set_fact:
+    flipped_connections_list: "{{ flipped_connections_list | default({}) | combine({conn['value']['name']: conn['value']}) }}"
+  loop: "{{ connections_list['json'] | dict2items }}"
+  loop_control:
+    loop_var:  "conn"
+    label:     "{{ conn['value']['name'] }}"
+
+- name: "remove existing connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections/{{ flipped_connections_list[conn]['identifier'] }}?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "DELETE"
+    validate_certs: false
+    status_code: 204
+  loop: "{{ guacamole_connections }}"
+  loop_control:
+    loop_var: "conn"
+  when: conn in (flipped_connections_list | default([]))

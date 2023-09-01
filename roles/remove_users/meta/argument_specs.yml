@@ -1,0 +1,17 @@
+argument_specs:
+  main:
+    short_description: "remove guacamole users"
+    options:
+      guacamole_url:
+        description: "The url of the guacamole instance"
+        type: "str"
+        required: true
+      guacamole_authdata:
+        description: "Authentication data for guacamole"
+        type: "str"
+        required: true
+      guacamole_users:
+        description: "The names of the users to delete"
+        type: "list"
+        elements: "str"
+        required: true

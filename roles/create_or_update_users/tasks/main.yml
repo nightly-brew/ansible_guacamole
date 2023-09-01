@@ -1,0 +1,39 @@
+- name: "list existing users"
+  ansible.builtin.uri:
+    url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "GET"
+    validate_certs: false
+  register: "existing_users"
+
+- name: "update existing users credentials"
+  ansible.builtin.uri:
+    url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users/{{ user['username'] }}?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "PUT"
+    validate_certs: false
+    body_format: "json"
+    body:
+      username: "{{ user['username'] }}"
+      password: "{{ user['password'] }}"
+      attributes: {}
+    status_code: 204
+  loop: "{{ guacamole_users }}"
+  loop_control:
+    loop_var: "user"
+    label: "{{ user['username'] }}"
+  when: "user['username'] in existing_users['json']"
+
+- name: "create missing guacamole users"
+  ansible.builtin.uri:
+    url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "POST"
+    validate_certs: false
+    body_format: "json"
+    body:
+      username: "{{ user['username'] }}"
+      password: "{{ user['password'] }}"
+      attributes: {}
+  loop: "{{ guacamole_users }}"
+  loop_control:
+    loop_var: "user"
+    label: "{{ user['username'] }}"
+  when: "user['username'] not in existing_users['json']"

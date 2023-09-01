@@ -1,0 +1,17 @@
+- name: "list existing users"
+  ansible.builtin.uri:
+    url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "GET"
+    validate_certs: false
+  register: "existing_users"
+
+- name: "remove existing guacamole users"
+  ansible.builtin.uri:
+    url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users/{{ username }}?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "DELETE"
+    validate_certs: false
+    status_code: 204
+  loop: "{{ guacamole_users }}"
+  loop_control:
+    loop_var: "username"
+  when: "username in existing_users['json']"
