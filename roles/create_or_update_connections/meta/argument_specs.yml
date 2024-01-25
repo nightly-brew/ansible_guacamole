@@ -37,6 +37,7 @@ argument_specs:
             type: "str"
             choices:
             - "rdp"
+            - "ssh"
             required: true
           ad_domain:
             description: "The domain, if the remote machine authenticates through an active directory"

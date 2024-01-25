@@ -66,6 +66,51 @@
     label:    "{{ conn['name'] }}"
   when: conn['protocol'] == "rdp" and conn['name'] not in (flipped_pre_connections_list | default({}))
 
+- name: "update existing SSH connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections/{{ flipped_pre_connections_list[conn['name']]['identifier'] }}?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "PUT"
+    validate_certs: false
+    body_format: "json"
+    body:
+      parentIdentifier: "ROOT"
+      name: "{{ conn['name'] }}"
+      protocol: "ssh"
+      parameters:
+        hostname:      "{{ conn['address'] }}"
+        port:          "{{ conn['port'] | default('') }}"
+        username:      "{{ conn['username'] }}"
+        password:      "{{ conn['password'] | default('') }}"
+      attributes: {}
+    status_code: 204
+  loop: "{{ guacamole_connections }}"
+  loop_control:
+    loop_var: "conn"
+    label:    "{{ conn['name'] }}"
+  when: conn['protocol'] == "ssh" and conn['name'] in (flipped_pre_connections_list | default({}))
+
+- name: "create missing SSH connections"
+  ansible.builtin.uri:
+    url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections?token={{ guacamole_authdata['json']['authToken'] }}"
+    method: "POST"
+    validate_certs: false
+    body_format: "json"
+    body:
+      parentIdentifier: "ROOT"
+      name: "{{ conn['name'] }}"
+      protocol: "ssh"
+      parameters:
+        hostname:      "{{ conn['address'] }}"
+        port:          "{{ conn['port'] | default('') }}"
+        username:      "{{ conn['username'] }}"
+        password:      "{{ conn['password'] | default('') }}"
+      attributes: {}
+  loop: "{{ guacamole_connections }}"
+  loop_control:
+    loop_var: "conn"
+    label:    "{{ conn['name'] }}"
+  when: conn['protocol'] == "ssh" and conn['name'] not in (flipped_pre_connections_list | default({}))
+
 - name: "list connections after creation"
   ansible.builtin.uri:
     url:    "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/connections?token={{ guacamole_authdata['json']['authToken'] }}"
