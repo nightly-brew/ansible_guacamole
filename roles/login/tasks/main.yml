@@ -13,4 +13,4 @@
 
 - name: Persist login token
   ansible.builtin.set_fact:
-    "{{ register_authdata_into }}": "{{ guacamole_auth }}"
+    "guacamole_authdata": "{{ guacamole_auth }}"

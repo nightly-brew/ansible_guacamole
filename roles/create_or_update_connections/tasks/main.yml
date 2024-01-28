@@ -122,7 +122,7 @@
 
 - name: Extract connection ids
   ansible.builtin.set_fact:
-    connection_ids: "{{ connection_ids | default([]) + [{ 'name': conn['name'], 'id': conn['identifier']}] }}"
+    connection_ids: "{{ connection_ids | default([]) + [{'name': conn['name'], 'id': conn['identifier']}] }}"
   loop: "{{ post_connections_list['json'] | dict2items | map(attribute='value') | list }}"
   loop_control:
     loop_var: "conn"

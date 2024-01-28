@@ -16,7 +16,3 @@ argument_specs:
         description: "The password to use for authentication on guacamole"
         type: "str"
         required: true
-      register_authdata_into:
-        description: "The name of the variable where the token and datasource details will be written"
-        type: "str"
-        required: true
