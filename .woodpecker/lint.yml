@@ -1,0 +1,7 @@
+---
+
+steps:
+- name: lint ansible code
+  image: docker.io/pipelinecomponents/ansible-lint
+  commands:
+  - ansible-lint

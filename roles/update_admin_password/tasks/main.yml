@@ -1,4 +1,6 @@
-- name: "update admin password"
+---
+
+- name: Update admin password
   ansible.builtin.uri:
     url: "{{ guacamole_url }}/api/session/data/{{ guacamole_authdata['json']['dataSource'] }}/users/{{ guacamole_admin_username }}/password?token={{ guacamole_authdata['json']['authToken'] }}"
     method: "PUT"

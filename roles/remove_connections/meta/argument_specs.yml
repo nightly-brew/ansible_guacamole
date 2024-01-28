@@ -1,3 +1,5 @@
+---
+
 argument_specs:
   main:
     short_description: "remove guacamole connections"
@@ -12,6 +14,6 @@ argument_specs:
         required: true
       guacamole_connections:
         description: "The names of the connections to remove"
-        type:        "list"
-        elements:    "str"
-        required:    true
+        type: "list"
+        elements: "str"
+        required: true

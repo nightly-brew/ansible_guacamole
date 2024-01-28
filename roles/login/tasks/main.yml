@@ -1,4 +1,6 @@
-- name: "log into guacamole"
+---
+
+- name: Log into guacamole
   ansible.builtin.uri:
     url: "{{ guacamole_url }}/api/tokens"
     method: "POST"
@@ -9,6 +11,6 @@
     - ['password', '{{ guacamole_password }}']
   register: 'guacamole_auth'
 
-- name: "persist login token"
+- name: Persist login token
   ansible.builtin.set_fact:
     "{{ register_authdata_into }}": "{{ guacamole_auth }}"
